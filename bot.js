@@ -185,3 +185,51 @@ function formatUptime(uptime) {
     uptime = uptime + ' ' + unit;
     return uptime;
 }
+
+
+controller.hears(['beer'],'direct_message,direct_mention,mention',function(bot,message) {
+  bot.startConversation(message, askFlavor);
+});
+
+askFlavor = function(response, convo) {
+  convo.ask('What kind of :beer: do you want?', [
+      {
+        pattern: 'Stiegl',
+        callback: function(response, convo) {
+            convo.say('Awesome choice!');
+            askSize(response, convo);
+            convo.next();
+        }
+      },
+      {
+        pattern: 'Zipfer',
+        callback: function(response, convo) {
+            convo.say('Alright.');
+            askSize(response, convo);
+            convo.next();
+        }
+      },
+      {
+        default: true,
+        callback: function(response,convo) {
+          convo.say('Sorry, I do not know that one!');
+          convo.repeat();
+          convo.next();
+        }
+      }],
+      { key: 'kind' }
+  )
+}
+askSize = function(response, convo) {
+  convo.ask('How many :beers: do you need?', function(response, convo) {
+    convo.say('Ok.')
+    askWhereDeliver(response, convo);
+    convo.next();
+  }, { key: 'amount' });
+}
+askWhereDeliver = function(response, convo) {
+  convo.ask('So where do you want it delivered?', function(response, convo) {
+    convo.say('Ok! *' + convo.extractResponse('amount') + ' ' + convo.extractResponse('kind') + '* are on their way to *' + convo.extractResponse('location') + '*, cheers! :beers:');
+    convo.next();
+  }, { key: 'location' });
+}
